@@ -15,6 +15,22 @@
         "type": "github"
       }
     },
+    "go-appimage-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1644051043,
+        "narHash": "sha256-ca1qCqI8NXzsVlhiMLY3EG+5J/+L8kU+PXlup6iWeok=",
+        "owner": "probonopd",
+        "repo": "go-appimage",
+        "rev": "e9aecb65f0a06fc0c6ca43c3f8e35e39f1df2fb0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "probonopd",
+        "repo": "go-appimage",
+        "type": "github"
+      }
+    },
     "nix-bundle": {
       "inputs": {
         "nixpkgs": "nixpkgs"
@@ -84,11 +100,12 @@
     },
     "nixpkgs_3": {
       "locked": {
-        "lastModified": 1634782485,
-        "narHash": "sha256-psfh4OQSokGXG0lpq3zKFbhOo3QfoeudRcaUnwMRkQo=",
-        "path": "/nix/store/p53cz6rh27q40g9i0q98k3vfrz6lm12w-source",
-        "rev": "34ad3ffe08adfca17fcb4e4a47bb5f3b113687be",
-        "type": "path"
+        "lastModified": 1647125019,
+        "narHash": "sha256-PXA76/iIqtbrA0ydCyc7Wpdw7TQTnfEowM87YtTXfB4=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "b0e141e3fe13ec21f50429773d2e3890e02a80da",
+        "type": "github"
       },
       "original": {
         "id": "nixpkgs",
@@ -97,6 +114,7 @@
     },
     "root": {
       "inputs": {
+        "go-appimage-src": "go-appimage-src",
         "nix-bundle": "nix-bundle",
         "nix-utils": "nix-utils",
         "nixpkgs": "nixpkgs_3"
