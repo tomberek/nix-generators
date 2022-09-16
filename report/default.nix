@@ -171,8 +171,12 @@ mkReport = drv:
       if hasAttr "meta" drv && hasAttr "maintainers" drv.meta
       then concatStringsSep ", " (map (m: m.name) drv.meta.maintainers)
       else "nobody";
+    source = 
+      if hasAttr "src" drv
+      then drv.src
+      else "unknown";
 
-  in " - ${drv.name} (${license}) maintained by ${maintainer}";
+  in " - ${drv.name} (${license}) source: ${source}";
 
 # Basically pretty prints a license
 renderLicense = license:
