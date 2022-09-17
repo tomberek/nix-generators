@@ -18,6 +18,8 @@ with rec
       runCommand
       writeText
       jq
+      util-linux
+      writeDirectReferencesToFile
       ;
     inherit (pkgs.lib)
       concatLists
@@ -29,6 +31,7 @@ with rec
       isList
       isString
       mapAttrsToList
+      replaceStrings
       ;
     inherit (builtins)
       genericClosure
@@ -75,18 +78,37 @@ let
 # list of runtime store paths. If it's a match, we keep it. Otherwise, we
 # discard it.
 runtimeReport = drv:
-  runCommand "${drv.name}-report" { buildInputs = [ jq ]; }
+let
+  directRefs =  writeDirectReferencesToFile drv;
+  runtimeOfBuildTime = let
+  drvContents = builtins.readFile drv.drvPath;
+  storeDirRe = replaceStrings [ "." ] [ "\\." ] builtins.storeDir;
+  storeBaseRe = "[0-9a-df-np-sv-z]{32}-[+_?=a-zA-Z0-9-][+_?=.a-zA-Z0-9-]*";
+  re = "(${storeDirRe}/${storeBaseRe}\\.drv)";
+  inputs = concatLists (filter isList (builtins.split re drvContents));
+in concatStringsSep "\n" (map import inputs);
+in
+  runCommand "${drv.name}-report" { buildInputs = [ jq util-linux ]; drvDrvPath = [ drv.drvPath]; }
   # XXX: This is to avoid IFD
   ''
     (
+      echo ${drv.drvPath}
+      echo
+      # cat ${closureInfo { rootPaths = [ drv ]; }}/store-paths
+      echo "direct runtime dependencies of ${drv.name}"
+      cat "${directRefs}"
+      echo
       echo "  ---------------------------------"
-      echo "  |        OFFICIAL REPORT        |"
-      echo "  |   requested by: the lawyers   |"
-      echo "  |    written by: yours truly    |"
-      echo "  |    TOP SECRET - TOP SECRET    |"
+      echo
+      echo "direct runtime of buildtime of ${drv.name}"
+      echo "${runtimeOfBuildTime}"
+
+      echo
       echo "  ---------------------------------"
       echo
       echo "runtime dependencies of ${drv.name}:"
+    ) > $out
+    (
       cat ${buildtimeReports drv} |\
         jq -r --slurpfile runtime ${cinfo drv} \
           ' # First, we strip away (path-)duplicates.
@@ -98,7 +120,7 @@ runtimeReport = drv:
                 select(. as $obj | $runtime | any(.[] | . == $obj.path))
               | .report)
           | .[]'
-    ) > $out
+    ) | column -t >> $out
   '';
 
 # Creates reports for all of `drv`'s buildtime dependencies. Each element in
@@ -176,7 +198,7 @@ mkReport = drv:
       then drv.src
       else "unknown";
 
-  in " - ${drv.name} (${license}) source: ${source}";
+  in "${source} ${drv.name} ${license}";
 
 # Basically pretty prints a license
 renderLicense = license:
